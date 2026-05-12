@@ -1,0 +1,8 @@
+name: ollama-dev
+base: ubuntu@22.04
+sdks:
+  - name: system
+  - name: opencode
+    channel: latest/edge
+actions:
+  opencode: opencode "$@"
