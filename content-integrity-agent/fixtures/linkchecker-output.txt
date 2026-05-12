@@ -1,0 +1,29 @@
+URL        https://canonical.com/old-data-docs
+Parent URL https://canonical.com/data, line 42
+Error      404 Not Found
+Result     Error
+
+URL        https://canonical.com/deprecated-api/v1
+Parent URL https://canonical.com/kubernetes, line 120
+Error      404 Not Found
+Result     Error
+
+URL        https://canonical.com/microk8s/legacy-install
+Parent URL https://canonical.com/microk8s, line 88
+Error      404 Not Found
+Result     Error
+
+URL        https://canonical.com/openstack/old-pricing
+Parent URL https://canonical.com/openstack, line 55
+Error      404 Not Found
+Result     Error
+
+URL        https://canonical.com/broken-timeout-example
+Parent URL https://canonical.com/data, line 140
+Error      Connection timeout
+Result     Error
+
+URL        https://canonical.com/too-many-redirects
+Parent URL https://canonical.com/microk8s, line 200
+Error      Too many redirects
+Result     Error

@@ -1,23 +1,37 @@
-"""
-StructuredLogger: Structured logging for the entire system.
-ENGINEER A: Implement this utility.
-"""
+import json
+import sys
+from datetime import datetime
+
 
 class StructuredLogger:
-    """Prints structured JSON lines to stderr, pretty-printed to stdout."""
-
     def __init__(self, name: str, pretty: bool = True):
         self.name = name
         self.pretty = pretty
 
+    def _emit(self, level: str, message: str, **kwargs):
+        record = {
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "level": level,
+            "logger": self.name,
+            "message": message,
+        }
+        record.update(kwargs)
+        if self.pretty:
+            parts = [f"[{self.name}]", level, message]
+            if kwargs:
+                parts.append(json.dumps(kwargs, default=str))
+            print(" ".join(parts), file=sys.stderr)
+        else:
+            print(json.dumps(record, default=str), file=sys.stderr)
+
     def info(self, message: str, **kwargs):
-        raise NotImplementedError("Engineer A: Implement info logging")
+        self._emit("INFO", message, **kwargs)
 
     def warn(self, message: str, **kwargs):
-        raise NotImplementedError("Engineer A: Implement warn logging")
+        self._emit("WARN", message, **kwargs)
 
     def error(self, message: str, **kwargs):
-        raise NotImplementedError("Engineer A: Implement error logging")
+        self._emit("ERROR", message, **kwargs)
 
     def debug(self, message: str, **kwargs):
-        raise NotImplementedError("Engineer A: Implement debug logging")
+        self._emit("DEBUG", message, **kwargs)
