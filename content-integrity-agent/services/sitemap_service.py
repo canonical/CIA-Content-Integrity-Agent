@@ -9,18 +9,9 @@ from urllib.parse import urlparse
 class SitemapService:
     """Builds an in-memory index of known site URLs for similarity matching."""
 
-    def __init__(self, http_client):
+    def __init__(self, http_client, url_index: set = None):
         self.http = http_client
-        self._url_index = {
-            "https://canonical.com/data",
-            "https://canonical.com/data/docs",
-            "https://canonical.com/kubernetes",
-            "https://canonical.com/kubernetes/docs",
-            "https://canonical.com/microk8s",
-            "https://canonical.com/microk8s/docs",
-            "https://canonical.com/openstack",
-            "https://canonical.com/openstack/pricing",
-        }
+        self._url_index = url_index or set()
 
     def _get_path_segments(self, url: str) -> set:
         parsed = urlparse(url)
