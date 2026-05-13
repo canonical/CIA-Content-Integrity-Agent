@@ -1,0 +1,14 @@
+{
+  "provider": {
+    "gemma4": {
+       "api": "openai",
+       "name": "Gemma 4 Inference Snap",
+       "options": {
+         "baseURL": "http://127.0.0.1:8336/v1"
+       },
+       "models": {
+         "gemma4-e4b-q4-k-m": {}
+       }
+    }
+  }
+}
