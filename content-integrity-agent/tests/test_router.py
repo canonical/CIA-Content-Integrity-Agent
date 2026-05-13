@@ -222,3 +222,26 @@ def test_router_dominant_action_priority_mixed_batch():
     assert len(result.notifications) == 1
     # AUTO_FIX + NOTIFY_INVESTIGATE → NOTIFY_WITH_SUGGESTION per spec
     assert result.notifications[0].action_taken == RouterAction.NOTIFY_WITH_SUGGESTION
+
+
+def test_router_timeout_is_link_alive_exception_falls_through():
+    """When is_link_alive raises, timeout failure should fall through to normal routing."""
+    f = LinkFailure(
+        source_page="https://canonical.com/data",
+        broken_url="https://canonical.com/broken-timeout",
+        severity=FailureSeverity.TIMEOUT,
+        error_message="Connection timeout",
+    )
+    owner = _owner()
+    state = _state_with(
+        failures=[f],
+        suggestions={},
+        owners={owner.email: owner},
+        page_meta={f.source_page: PageMeta(url=f.source_page, page_owner_email=owner.email)},
+    )
+    agent = RouterAgent(verbose=False)
+    with patch("agents.confidence_router.HTTPClient") as mock_http:
+        mock_http.return_value.is_link_alive.side_effect = Exception("network error")
+        result = agent.run(state)
+    # Should fall through to NOTIFY_INVESTIGATE (no suggestions)
+    assert result.notifications[0].action_taken == RouterAction.NOTIFY_INVESTIGATE

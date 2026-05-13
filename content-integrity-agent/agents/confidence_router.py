@@ -115,6 +115,15 @@ class RouterAgent(BaseAgent):
         return None
 
     def _dominant_action(self, actions: List[RouterAction]) -> RouterAction:
+        """Pick the most severe action for a batch of failures.
+
+        Priority order per spec:
+        1. All AUTO_FIX → AUTO_FIX
+        2. Any AUTO_FIX or NOTIFY_WITH_SUGGESTION → NOTIFY_WITH_SUGGESTION
+        3. Any NOTIFY_INVESTIGATE → NOTIFY_INVESTIGATE
+        4. All SUPPRESS_FALSE_ALARM → SUPPRESS_FALSE_ALARM (all false alarms)
+        5. Default → ESCALATE_OPS
+        """
         if all(a == RouterAction.AUTO_FIX for a in actions):
             return RouterAction.AUTO_FIX
         if any(a in (RouterAction.AUTO_FIX, RouterAction.NOTIFY_WITH_SUGGESTION) for a in actions):
@@ -168,8 +177,7 @@ class RouterAgent(BaseAgent):
             for url in copydoc_urls:
                 lines.append(url)
         else:
-            lines.append("You can update the content via your copydoc(s):")
-            lines.append("(no copydoc URL found)")
+            lines.append("(No copydoc URL found — check the page directly)")
 
         lines.append("")
         lines.append("— Content Integrity Agent 🤖")
