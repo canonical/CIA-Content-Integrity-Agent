@@ -41,3 +41,34 @@ def extract_page_meta(html: str) -> Dict[str, Optional[str]]:
         "copydoc_url": parser.copydoc_url,
         "title": parser.title,
     }
+
+
+class _TextExtractor(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self._parts = []
+        self._skip_tags = {"script", "style", "head"}
+        self._skip_depth = 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag in self._skip_tags:
+            self._skip_depth += 1
+
+    def handle_endtag(self, tag):
+        if tag in self._skip_tags and self._skip_depth > 0:
+            self._skip_depth -= 1
+
+    def handle_data(self, data):
+        if self._skip_depth == 0:
+            text = data.strip()
+            if text:
+                self._parts.append(text)
+
+    def get_text(self) -> str:
+        return "\n".join(self._parts)
+
+
+def extract_visible_text(html: str) -> str:
+    parser = _TextExtractor()
+    parser.feed(html)
+    return parser.get_text()
