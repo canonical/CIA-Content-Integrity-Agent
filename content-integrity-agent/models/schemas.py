@@ -73,6 +73,16 @@ class FixSuggestion:
 
 
 @dataclass
+class ComplianceFinding:
+    """A single compliance violation found by the ComplianceAgent."""
+    rule: str
+    severity: str  # "error", "warning", "info"
+    location: str
+    explanation: str
+    standard_source: str  # "UX Standards" or "Copy Style Guide"
+
+
+@dataclass
 class AgentAuditLog:
     """Immutable log of every agent decision."""
     timestamp: str
@@ -115,6 +125,7 @@ class PipelineState:
     page_meta: Dict[str, PageMeta] = field(default_factory=dict)
     owners: Dict[str, Owner] = field(default_factory=dict)
     suggestions: Dict[str, List[FixSuggestion]] = field(default_factory=dict)
+    compliance_findings: Dict[str, List[ComplianceFinding]] = field(default_factory=dict)
     notifications: List[Notification] = field(default_factory=list)
     audit_log: List[AgentAuditLog] = field(default_factory=list)
 

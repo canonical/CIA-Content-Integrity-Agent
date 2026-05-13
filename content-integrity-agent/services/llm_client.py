@@ -123,6 +123,73 @@ class LLMClient:
             logger.warning("OpenRouter API call failed, using fallback: %s", e)
             return self._fallback_suggest(broken_url, candidate_urls)
 
+    def check_compliance(self, page_text: str, standards_text: str,
+                         standard_name: str) -> list:
+        if not self.api_key:
+            return []
+
+        system_msg = (
+            'You are a content compliance checker. Evaluate the web page content '
+            'against the provided standard. Respond in strict JSON:\n'
+            '{"findings": [{"rule": "...", "severity": "error|warning|info", '
+            '"location": "...", "explanation": "..."}]}\n'
+            'If no violations found, return {"findings": []}.'
+        )
+        user_msg = (
+            f"=== STANDARD: {standard_name} ===\n{standards_text}\n\n"
+            f"=== PAGE CONTENT TO CHECK ===\n{page_text[:4000]}"
+        )
+
+        try:
+            response = requests.post(
+                self.OPENROUTER_URL,
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "https://canonical.com",
+                    "X-Title": "Content Integrity Agent",
+                },
+                json={
+                    "model": self.model,
+                    "temperature": 0.2,
+                    "messages": [
+                        {"role": "system", "content": system_msg},
+                        {"role": "user", "content": user_msg},
+                    ],
+                },
+                timeout=60,
+            )
+            response.raise_for_status()
+            data = response.json()
+            content = data["choices"][0]["message"]["content"]
+            return self._parse_compliance_response(content, standard_name)
+        except Exception as e:
+            logger.warning("Compliance check failed for %s: %s", standard_name, e)
+            return []
+
+    def _parse_compliance_response(self, raw: str, standard_name: str) -> list:
+        text = raw.strip()
+        fence_pattern = re.compile(r"```(?:json)?\s*\n?(.*?)\n?\s*```", re.DOTALL)
+        match = fence_pattern.search(text)
+        if match:
+            text = match.group(1).strip()
+
+        try:
+            parsed = json.loads(text)
+            findings = []
+            for f in parsed.get("findings", []):
+                findings.append({
+                    "rule": f.get("rule", ""),
+                    "severity": f.get("severity", "info"),
+                    "location": f.get("location", ""),
+                    "explanation": f.get("explanation", ""),
+                    "standard_source": standard_name,
+                })
+            return findings
+        except (json.JSONDecodeError, ValueError) as e:
+            logger.warning("Failed to parse compliance response: %s", e)
+            return []
+
     def draft_email(self, owner_name: str, failure_count: int, suggestions: list,
                     action: str) -> str:
         lines = [
