@@ -62,7 +62,7 @@ def main():
     with app.app_context():
         from api.models import Site, Scan
         db.create_all()
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+    socketio.run(app, host="0.0.0.0", port=5001, debug=True, allow_unsafe_werkzeug=True)
 
 
 if __name__ == "__main__":
