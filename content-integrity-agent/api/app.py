@@ -24,7 +24,8 @@ def create_app(settings: Settings = None) -> Flask:
     CORS(app, origins=[settings.cors_origin])
 
     db.init_app(app)
-    socketio.init_app(app)
+    cors_origins = [settings.cors_origin] if settings else "*"
+    socketio.init_app(app, cors_allowed_origins=cors_origins)
 
     # Blueprint registrations - uncomment when routes are implemented
     # from api.routes.sites import sites_bp
@@ -38,10 +39,6 @@ def create_app(settings: Settings = None) -> Flask:
     @app.route("/api/health")
     def health():
         return {"status": "ok"}
-
-    with app.app_context():
-        # from api.models import Site, Scan
-        db.create_all()
 
     if os.path.exists(os.path.join(os.path.dirname(__file__), "..", "web", "dist")):
         _register_static_routes(app)
@@ -62,6 +59,9 @@ def _register_static_routes(app: Flask):
 
 def main():
     app = create_app()
+    with app.app_context():
+        from api.models import Site, Scan
+        db.create_all()
     socketio.run(app, host="0.0.0.0", port=5000, debug=True)
 
 
