@@ -5,38 +5,45 @@ from api.models import Site
 sites_bp = Blueprint("sites", __name__)
 
 
-@sites_bp.route("", methods=["GET"])
+@sites_bp.route("", methods=["GET"], strict_slashes=False)
 def list_sites():
     sites = Site.query.order_by(Site.created_at.desc()).all()
     return jsonify([s.to_dict() for s in sites])
 
 
-@sites_bp.route("", methods=["POST"])
+@sites_bp.route("", methods=["POST"], strict_slashes=False)
 def create_site():
     data = request.get_json()
     if not data or not data.get("name") or not data.get("base_url"):
         return jsonify({"error": "name and base_url are required"}), 400
 
-    base_url = data["base_url"].rstrip("/")
+    name = data["name"]
+    base_url = data["base_url"]
+    if not isinstance(name, str) or not name.strip():
+        return jsonify({"error": "name must be a non-empty string"}), 400
+    if not isinstance(base_url, str) or not base_url.strip():
+        return jsonify({"error": "base_url must be a non-empty string"}), 400
+
+    base_url = base_url.rstrip("/")
     sitemap_url = data.get("sitemap_url", f"{base_url}/sitemap.xml")
 
     existing = Site.query.filter_by(base_url=base_url).first()
     if existing:
         return jsonify({"error": "site with this base_url already exists", "detail": f"site id={existing.id}"}), 409
 
-    site = Site(name=data["name"], base_url=base_url, sitemap_url=sitemap_url)
+    site = Site(name=name, base_url=base_url, sitemap_url=sitemap_url)
     db.session.add(site)
     db.session.commit()
     return jsonify(site.to_dict()), 201
 
 
-@sites_bp.route("/<int:site_id>", methods=["GET"])
+@sites_bp.route("/<int:site_id>", methods=["GET"], strict_slashes=False)
 def get_site(site_id):
     site = Site.query.get_or_404(site_id)
     return jsonify(site.to_dict())
 
 
-@sites_bp.route("/<int:site_id>", methods=["DELETE"])
+@sites_bp.route("/<int:site_id>", methods=["DELETE"], strict_slashes=False)
 def delete_site(site_id):
     site = Site.query.get_or_404(site_id)
     db.session.delete(site)
