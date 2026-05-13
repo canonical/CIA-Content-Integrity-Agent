@@ -59,7 +59,7 @@ class SuggestionAgent(BaseAgent):
 
         state.log(
             self.name,
-            "suggest_fix",
+            "ANALYZE",
             f"failure={uid}",
             f"suggested={suggestion.suggested_url} confidence={confidence}",
             confidence=confidence,

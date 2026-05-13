@@ -94,6 +94,28 @@ def test_suggestion_agent_clamps_confidence():
     assert result.suggestions[uid][0].confidence <= 1.0
 
 
+def test_suggestion_agent_clamps_negative_confidence():
+    http = MagicMock()
+    http.get.return_value = "<html></html>"
+    llm = MagicMock()
+    llm.suggest_fix.return_value = {
+        "suggested_url": "https://canonical.com/data/docs",
+        "confidence": -0.5,  # Negative out of range
+        "reasoning": "test",
+        "user_facing_explanation": "try",
+    }
+    sitemap = MagicMock()
+    sitemap.find_similar.return_value = []
+    sitemap.get_page_context.return_value = ""
+
+    agent = SuggestionAgent(http_client=http, llm_client=llm, sitemap=sitemap, verbose=False)
+    state = _make_state(failures=[_make_failure()])
+    result = agent.run(state)
+
+    uid = _make_failure().unique_id()
+    assert result.suggestions[uid][0].confidence >= 0.0
+
+
 def test_suggestion_agent_handles_llm_exception():
     http = MagicMock()
     http.get.return_value = "<html></html>"
