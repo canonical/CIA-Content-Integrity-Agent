@@ -20,6 +20,8 @@ class Settings:
     cache_dir: str = ".cache"
     fixtures_dir: str = "fixtures"
     dry_run: bool = True
+    db_path: str = "data/cia.db"
+    cors_origin: str = "http://localhost:5173"
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -35,4 +37,6 @@ class Settings:
             cache_dir=os.environ.get("CACHE_DIR", ".cache"),
             fixtures_dir=os.environ.get("FIXTURES_DIR", "fixtures"),
             dry_run=os.environ.get("DRY_RUN", "true").lower() == "true",
+            db_path=os.environ.get("CIA_DB_PATH", "data/cia.db"),
+            cors_origin=os.environ.get("CIA_CORS_ORIGIN", "http://localhost:5173"),
         )

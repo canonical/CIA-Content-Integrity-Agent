@@ -7,3 +7,6 @@ __pycache__/
 dist/
 build/
 .eggs/
+data/
+web/node_modules/
+web/dist/
