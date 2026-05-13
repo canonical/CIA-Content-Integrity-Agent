@@ -9,6 +9,7 @@ from models.schemas import (
     PipelineState, LinkFailure, FailureSeverity, RouterAction,
     FixSuggestion, Notification, Owner, PageMeta,
 )
+from services.http_client import HTTPClient
 
 
 class RouterAgent(BaseAgent):
@@ -78,6 +79,15 @@ class RouterAgent(BaseAgent):
         return state
 
     def _decide(self, failure: LinkFailure, state: PipelineState) -> Tuple[RouterAction, str]:
+        # 1. Self-validation: re-check broken link if timeout
+        if failure.severity == FailureSeverity.TIMEOUT:
+            try:
+                if HTTPClient().is_link_alive(failure.broken_url):
+                    return (RouterAction.SUPPRESS_FALSE_ALARM,
+                            "Link is now alive - transient timeout")
+            except Exception:
+                pass
+
         owner_email = self._get_owner_email(failure, state)
 
         if not owner_email:
@@ -107,10 +117,12 @@ class RouterAgent(BaseAgent):
     def _dominant_action(self, actions: List[RouterAction]) -> RouterAction:
         if all(a == RouterAction.AUTO_FIX for a in actions):
             return RouterAction.AUTO_FIX
-        if any(a == RouterAction.NOTIFY_INVESTIGATE for a in actions):
-            return RouterAction.NOTIFY_INVESTIGATE
         if any(a in (RouterAction.AUTO_FIX, RouterAction.NOTIFY_WITH_SUGGESTION) for a in actions):
             return RouterAction.NOTIFY_WITH_SUGGESTION
+        if any(a == RouterAction.NOTIFY_INVESTIGATE for a in actions):
+            return RouterAction.NOTIFY_INVESTIGATE
+        if all(a == RouterAction.SUPPRESS_FALSE_ALARM for a in actions):
+            return RouterAction.SUPPRESS_FALSE_ALARM
         return RouterAction.ESCALATE_OPS
 
     def _subject_line(self, action: RouterAction, count: int) -> str:
