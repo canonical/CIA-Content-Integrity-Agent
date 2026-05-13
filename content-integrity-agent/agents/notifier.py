@@ -1,6 +1,5 @@
 """
 NotifierAgent: Outputs notifications to console (mock email delivery).
-ENGINEER C: Implement this agent.
 """
 
 from agents.base import BaseAgent
@@ -15,4 +14,14 @@ class NotifierAgent(BaseAgent):
         self.dry_run = dry_run
 
     def run(self, state: PipelineState) -> PipelineState:
-        raise NotImplementedError("Engineer C: Implement console notification output")
+        for idx, notification in enumerate(state.notifications, start=1):
+            if self.dry_run:
+                print(f"[DRY RUN - Email #{idx}]")
+            print(notification.to_console())
+            state.log(
+                agent_name=self.name,
+                action="notify",
+                input_summary=f"Notification #{idx} for {notification.recipient.email}",
+                output_summary=f"Printed notification ({notification.action_taken.value})",
+            )
+        return state
