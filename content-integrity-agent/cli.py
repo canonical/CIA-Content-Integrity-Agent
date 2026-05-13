@@ -9,7 +9,7 @@ from config.settings import Settings
 from models.schemas import PipelineState
 from services.http_client import HTTPClient
 from services.llm_client import LLMClient
-from services.mock_google_doc_api import MockGoogleDocAPI
+from services.google_docs_client import GoogleDocsClient
 from services.mock_directory_api import MockDirectoryAPI
 from services.sitemap_service import SitemapService
 from services.google_doc_fetcher import GoogleDocFetcher
@@ -75,7 +75,7 @@ def create_pipeline(input_path: str, verbose: bool = True, dry_run: bool = True,
 
     http_client = HTTPClient()
     llm_client = LLMClient(api_key=settings.openrouter_api_key, model=settings.openrouter_model)
-    doc_api = MockGoogleDocAPI()
+    doc_api = GoogleDocsClient()
     directory_api = MockDirectoryAPI()
     sitemap = SitemapService(http_client)
 

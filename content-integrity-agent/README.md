@@ -30,13 +30,14 @@
 ## 🚀 Quick Start
 
 ```bash
-# 1. Check imports work
+# Using run.sh (works everywhere):
+./run.sh lint     # Check imports
+./run.sh test     # Run all tests
+./run.sh demo     # Run full pipeline
+
+# Or using make (if available):
 make lint
-
-# 2. Run contract tests
 make test
-
-# 3. Run demo (once implemented)
 make demo
 ```
 
@@ -57,7 +58,8 @@ If no API key is provided, the system falls back to **deterministic URL similari
 ```
 content-integrity-agent/
 ├── cli.py                    # Entry point
-├── Makefile                  # Quick commands
+├── run.sh                     # Shell runner (use if make unavailable)
+├── Makefile                   # Quick commands
 ├── .env.example              # Environment template
 ├── models/                   # Data models (FROZEN)
 │   └── schemas.py
