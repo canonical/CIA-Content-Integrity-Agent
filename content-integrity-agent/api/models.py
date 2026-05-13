@@ -18,9 +18,6 @@ class Site(db.Model):
     def __repr__(self):
         return f"<Site id={self.id} name={self.name!r}>"
 
-    def __repr__(self):
-        return f"<Site id={self.id} name={self.name!r}>"
-
     def to_dict(self):
         return {
             "id": self.id,
