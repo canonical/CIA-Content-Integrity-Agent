@@ -7,7 +7,7 @@ from typing import List, Tuple
 from agents.base import BaseAgent
 from models.schemas import (
     PipelineState, LinkFailure, FailureSeverity, RouterAction,
-    FixSuggestion, Notification, Owner, PageMeta,
+    FixSuggestion, Notification, Owner, PageMeta, ComplianceFinding,
 )
 from services.http_client import HTTPClient
 
@@ -178,6 +178,23 @@ class RouterAgent(BaseAgent):
                 lines.append(url)
         else:
             lines.append("(No copydoc URL found — check the page directly)")
+
+        owner_findings: List[ComplianceFinding] = []
+        for f in failures:
+            findings = state.compliance_findings.get(f.source_page, [])
+            owner_findings.extend(findings)
+        if not owner_findings:
+            for page_url, findings in state.compliance_findings.items():
+                owner_findings.extend(findings)
+
+        if owner_findings:
+            lines.append("")
+            lines.append("**Content compliance issues:**")
+            for finding in owner_findings:
+                lines.append(f"• [{finding.severity.upper()}] {finding.rule}")
+                lines.append(f"  Location: {finding.location}")
+                lines.append(f"  Source: {finding.standard_source}")
+                lines.append(f"  {finding.explanation}")
 
         lines.append("")
         lines.append("— Content Integrity Agent 🤖")

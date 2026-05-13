@@ -20,6 +20,10 @@ class Settings:
     cache_dir: str = ".cache"
     fixtures_dir: str = "fixtures"
     dry_run: bool = True
+    ux_standards_doc_id: str = "1xWKWhvURu7rKmhjhwf1OSvMecBlD0qLpLJmWq2TawwY"
+    copy_style_guide_doc_id: str = "1AX-kSNztuAmShEoohe8L3LNLRnSKF7I0qkZGNeoGOok"
+    google_service_account_info: str = ""
+    compliance_cache_ttl: int = 3600
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -35,4 +39,12 @@ class Settings:
             cache_dir=os.environ.get("CACHE_DIR", ".cache"),
             fixtures_dir=os.environ.get("FIXTURES_DIR", "fixtures"),
             dry_run=os.environ.get("DRY_RUN", "true").lower() == "true",
+            ux_standards_doc_id=os.environ.get(
+                "UX_STANDARDS_DOC_ID", "1xWKWhvURu7rKmhjhwf1OSvMecBlD0qLpLJmWq2TawwY"
+            ),
+            copy_style_guide_doc_id=os.environ.get(
+                "COPY_STYLE_GUIDE_DOC_ID", "1AX-kSNztuAmShEoohe8L3LNLRnSKF7I0qkZGNeoGOok"
+            ),
+            google_service_account_info=os.environ.get("GOOGLE_SERVICE_ACCOUNT_INFO", ""),
+            compliance_cache_ttl=int(os.environ.get("COMPLIANCE_CACHE_TTL", "3600")),
         )

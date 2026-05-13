@@ -12,6 +12,12 @@ test:
 	@echo "🧪 Running contract tests..."
 	@python -m pytest tests/test_contracts.py -v
 	@echo ""
+	@echo "🧪 Running compliance tests..."
+	@python -m pytest tests/test_compliance.py -v
+	@echo ""
+	@echo "🧪 Running Google Doc fetcher tests..."
+	@python -m pytest tests/test_google_doc_fetcher.py -v
+	@echo ""
 	@echo "🧪 Running end-to-end test..."
 	@python tests/test_e2e.py
 
@@ -30,9 +36,11 @@ lint:
 	@python -c "from agents.resolver import ResolverAgent; print('✅ ResolverAgent OK')"
 	@python -c "from agents.owner_resolver import OwnerResolverAgent; print('✅ OwnerResolverAgent OK')"
 	@python -c "from agents.suggestion import SuggestionAgent; print('✅ SuggestionAgent OK')"
+	@python -c "from agents.compliance import ComplianceAgent; print('✅ ComplianceAgent OK')"
 	@python -c "from agents.confidence_router import RouterAgent; print('✅ RouterAgent OK')"
 	@python -c "from agents.notifier import NotifierAgent; print('✅ NotifierAgent OK')"
 	@python -c "from agents.orchestrator import OrchestratorAgent; print('✅ OrchestratorAgent OK')"
+	@python -c "from services.google_doc_fetcher import GoogleDocFetcher; print('✅ GoogleDocFetcher OK')"
 
 help:
 	@echo "Available targets:"
