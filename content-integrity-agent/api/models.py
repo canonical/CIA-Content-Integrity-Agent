@@ -13,7 +13,13 @@ class Site(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     last_scanned_at = db.Column(db.DateTime, nullable=True)
 
-    scans = db.relationship("Scan", backref="site", lazy="dynamic")
+    scans = db.relationship("Scan", backref="site", lazy="select", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<Site id={self.id} name={self.name!r}>"
+
+    def __repr__(self):
+        return f"<Site id={self.id} name={self.name!r}>"
 
     def to_dict(self):
         return {
@@ -30,7 +36,7 @@ class Scan(db.Model):
     __tablename__ = "scans"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    site_id = db.Column(db.Integer, db.ForeignKey("sites.id"), nullable=False)
+    site_id = db.Column(db.Integer, db.ForeignKey("sites.id"), nullable=False, index=True)
     route_url = db.Column(db.Text, nullable=False)
     status = db.Column(db.Text, default="pending", nullable=False)
     progress = db.Column(db.Integer, default=0, nullable=False)
@@ -39,6 +45,9 @@ class Scan(db.Model):
     error_message = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     completed_at = db.Column(db.DateTime, nullable=True)
+
+    def __repr__(self):
+        return f"<Scan id={self.id} site_id={self.site_id} status={self.status!r}>"
 
     def to_dict(self, include_results=False):
         d = {
@@ -55,5 +64,9 @@ class Scan(db.Model):
         if include_results and self.results:
             import json
 
-            d["results"] = json.loads(self.results)
+            try:
+                d["results"] = json.loads(self.results)
+            except (json.JSONDecodeError, TypeError):
+                d["results"] = None
         return d
+
