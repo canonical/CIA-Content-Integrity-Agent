@@ -1,3 +1,4 @@
+import sys
 from agents.base import BaseAgent
 from models.schemas import PipelineState, RouterAction
 from typing import List
@@ -9,8 +10,9 @@ class OrchestratorAgent(BaseAgent):
         self.agents = agents
 
     def run(self, state: PipelineState) -> PipelineState:
-        for agent in self.agents:
-            print(f"→ Running {agent.name}...")
+        total = len(self.agents)
+        for idx, agent in enumerate(self.agents, 1):
+            self._print_progress(idx, total, agent.name)
             try:
                 state = agent.run(state)
             except Exception as exc:
@@ -21,10 +23,37 @@ class OrchestratorAgent(BaseAgent):
                     f"agent={agent.name}",
                     f"error={exc}",
                 )
-            print(f"✓ {agent.name} complete")
+            self._print_complete(idx, total, agent.name, state)
 
         self._print_summary(state)
         return state
+
+    def _print_progress(self, current: int, total: int, name: str):
+        bar = self._bar(current, total, 20)
+        print(f"\r{bar} [{current}/{total}] Running {name}...", end="", flush=True)
+
+    def _print_complete(self, current: int, total: int, name: str, state: PipelineState):
+        bar = self._bar(current, total, 20, fill=True)
+        count = self._state_count(name, state)
+        detail = f" ({count})" if count else ""
+        print(f"\r{bar} [{current}/{total}] {name} complete{detail}    ")
+
+    def _bar(self, current: int, total: int, width: int, fill: bool = False) -> str:
+        filled = int(width * current / total) if total else width
+        if fill:
+            filled = width
+        return f"[{'█' * filled}{'░' * (width - filled)}]"
+
+    def _state_count(self, name: str, state: PipelineState) -> str:
+        counts = {
+            "Discovery": f"{len(state.failures)} failures",
+            "Resolver": f"{len(state.page_meta)} pages",
+            "OwnerResolver": f"{len(state.owners)} owners",
+            "Suggestion": f"{sum(len(v) for v in state.suggestions.values())} suggestions",
+            "Router": f"{len(state.notifications)} notifications",
+            "Notifier": "delivered",
+        }
+        return counts.get(name, "")
 
     def _print_summary(self, state: PipelineState):
         print()
