@@ -15,8 +15,7 @@ def test_find_similar_returns_list():
 def test_find_similar_finds_data_docs():
     svc = SitemapService(FakeHTTPClient())
     result = svc.find_similar("https://canonical.com/old-data-docs")
-    urls = [r if isinstance(r, str) else r[0] for r in result]
-    assert any("data/docs" in u for u in urls)
+    assert any("data/docs" in u for u in result)
 
 
 def test_find_similar_respects_top_k():
@@ -28,7 +27,7 @@ def test_find_similar_respects_top_k():
 def test_find_similar_returns_empty_for_no_match():
     svc = SitemapService(FakeHTTPClient())
     result = svc.find_similar("https://totally-different.com/nothing")
-    assert isinstance(result, list)
+    assert result == []
 
 
 def test_get_page_context_returns_string():
