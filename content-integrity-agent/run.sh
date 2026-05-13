@@ -20,7 +20,7 @@ from agents.orchestrator import OrchestratorAgent; print('✅ OrchestratorAgent 
 from services.http_client import HTTPClient; print('✅ HTTPClient OK')
 from services.llm_client import LLMClient; print('✅ LLMClient OK')
 from services.sitemap_service import SitemapService; print('✅ SitemapService OK')
-from services.mock_google_doc_api import MockGoogleDocAPI; print('✅ MockGoogleDocAPI OK')
+from services.google_docs_client import GoogleDocsClient; print('✅ GoogleDocsClient OK')
 from services.mock_directory_api import MockDirectoryAPI; print('✅ MockDirectoryAPI OK')
 from utils.decorators import retry; print('✅ retry OK')
 from utils.cache import SimpleCache; print('✅ SimpleCache OK')
