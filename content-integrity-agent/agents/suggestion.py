@@ -45,7 +45,11 @@ class SuggestionAgent(BaseAgent):
             candidate_urls=candidates,
         )
 
-        confidence = max(0.0, min(1.0, float(llm_result.get("confidence", 0.0))))
+        try:
+            raw_confidence = float(llm_result.get("confidence", 0.0))
+        except (ValueError, TypeError):
+            raw_confidence = 0.0
+        confidence = max(0.0, min(1.0, raw_confidence))
 
         suggestion = FixSuggestion(
             original_url=failure.broken_url,

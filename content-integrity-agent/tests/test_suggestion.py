@@ -91,7 +91,7 @@ def test_suggestion_agent_clamps_confidence():
     result = agent.run(state)
 
     uid = _make_failure().unique_id()
-    assert result.suggestions[uid][0].confidence <= 1.0
+    assert result.suggestions[uid][0].confidence == 1.0
 
 
 def test_suggestion_agent_clamps_negative_confidence():
@@ -113,7 +113,7 @@ def test_suggestion_agent_clamps_negative_confidence():
     result = agent.run(state)
 
     uid = _make_failure().unique_id()
-    assert result.suggestions[uid][0].confidence >= 0.0
+    assert result.suggestions[uid][0].confidence == 0.0
 
 
 def test_suggestion_agent_handles_llm_exception():
