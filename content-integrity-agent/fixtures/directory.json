@@ -1,0 +1,39 @@
+{
+    "users": [
+        {
+            "email": "alice.chen@canonical.com",
+            "display_name": "Alice Chen",
+            "team": "Data Platform Engineering",
+            "department": "Engineering",
+            "mattermost_username": "alice.chen"
+        },
+        {
+            "email": "bob.smith@canonical.com",
+            "display_name": "Bob Smith",
+            "team": "Cloud Native",
+            "department": "Engineering",
+            "mattermost_username": "bob.smith"
+        },
+        {
+            "email": "diana.prince@canonical.com",
+            "display_name": "Diana Prince",
+            "team": "Edge & IoT",
+            "department": "Engineering",
+            "mattermost_username": "diana.prince"
+        },
+        {
+            "email": "eve.davis@canonical.com",
+            "display_name": "Eve Davis",
+            "team": "Private Cloud",
+            "department": "Engineering",
+            "mattermost_username": "eve.davis"
+        },
+        {
+            "email": "ops-team@canonical.com",
+            "display_name": "Content Ops Team",
+            "team": "Web Operations",
+            "department": "Marketing",
+            "mattermost_username": "content-ops"
+        }
+    ]
+}
