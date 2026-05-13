@@ -27,14 +27,14 @@ def create_app(settings: Settings = None) -> Flask:
     cors_origins = [settings.cors_origin] if settings else "*"
     socketio.init_app(app, cors_allowed_origins=cors_origins)
 
-    # Blueprint registrations - uncomment when routes are implemented
+    # Blueprint registrations
     from api.routes.sites import sites_bp
-    # from api.routes.sitemaps import sitemaps_bp
-    # from api.routes.scans import scans_bp
+    from api.routes.sitemaps import sitemaps_bp
+    from api.routes.scans import scans_bp
 
     app.register_blueprint(sites_bp, url_prefix="/api/sites")
-    # app.register_blueprint(sitemaps_bp, url_prefix="/api/sites")
-    # app.register_blueprint(scans_bp, url_prefix="/api/scans")
+    app.register_blueprint(sitemaps_bp, url_prefix="/api/sites")
+    app.register_blueprint(scans_bp, url_prefix="/api/scans")
 
     @app.route("/api/health")
     def health():
