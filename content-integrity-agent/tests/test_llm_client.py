@@ -20,8 +20,8 @@ def test_suggest_fix_returns_dict():
     assert "user_facing_explanation" in result
 
 
-def test_suggest_fix_fallback_has_candidates():
-    """Fallback should pick from candidates."""
+def test_suggest_fix_fallback_picks_best_candidate():
+    """Fallback should pick the candidate with highest Jaccard similarity."""
     client = LLMClient(api_key=None)
     result = client.suggest_fix(
         broken_url="https://canonical.com/old-data-docs",
@@ -29,11 +29,8 @@ def test_suggest_fix_fallback_has_candidates():
         page_context="context",
         candidate_urls=["https://canonical.com/data/docs", "https://canonical.com/kubernetes"],
     )
-    assert result["suggested_url"] in [
-        "https://canonical.com/data/docs",
-        "https://canonical.com/kubernetes",
-        None,
-    ]
+    # /data/docs has more path segment overlap with /old-data-docs than /kubernetes
+    assert result["suggested_url"] == "https://canonical.com/data/docs"
 
 
 def test_suggest_fix_fallback_confidence_capped():
@@ -126,3 +123,32 @@ def test_suggest_fix_api_failure_falls_back():
         )
     assert isinstance(result, dict)
     assert result["confidence"] <= 0.5
+
+
+def test_draft_email_basic():
+    """draft_email should produce a formatted email string."""
+    client = LLMClient(api_key=None)
+    result = client.draft_email("Alice", 2, [], "notify_investigate")
+    assert "Alice" in result
+    assert "2" in result
+    assert "notify_investigate" in result
+    assert "Content Integrity Agent" in result
+
+
+def test_draft_email_with_suggestions():
+    """draft_email should include suggestion details."""
+    client = LLMClient(api_key=None)
+    suggestions = [
+        {"suggested_url": "https://canonical.com/data/docs", "user_facing_explanation": "Did you mean /data/docs?"},
+        {"suggested_url": "https://canonical.com/kubernetes/docs", "user_facing_explanation": "Try /kubernetes/docs"},
+    ]
+    result = client.draft_email("Bob", 2, suggestions, "notify_with_suggestion")
+    assert "data/docs" in result
+    assert "kubernetes/docs" in result
+
+
+def test_draft_email_with_string_suggestions():
+    """draft_email should handle plain string suggestions."""
+    client = LLMClient(api_key=None)
+    result = client.draft_email("Charlie", 1, ["Check the URL manually"], "escalate_ops")
+    assert "Check the URL manually" in result

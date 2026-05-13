@@ -3,11 +3,19 @@ LLMClient: OpenRouter client for LLM-powered reasoning.
 """
 
 import json
+import logging
 import os
 import re
-from urllib.parse import urlparse
 
 import requests
+
+from utils.url_similarity import get_path_segments, jaccard_similarity
+
+logger = logging.getLogger(__name__)
+
+# Cap fallback confidence to avoid overstating certainty without LLM
+_FALLBACK_CONFIDENCE_MULTIPLIER = 0.5
+_FALLBACK_CONFIDENCE_CAP = 0.5
 
 
 class LLMClient:
@@ -19,21 +27,6 @@ class LLMClient:
         self.api_key = api_key or os.environ.get("OPENROUTER_API_KEY")
         self.model = model or "openai/gpt-4o-mini"
 
-    def _get_path_segments(self, url: str) -> set:
-        parsed = urlparse(url)
-        path = parsed.path.strip("/")
-        if not path:
-            return set()
-        segments = []
-        for part in path.split("/"):
-            segments.extend(part.split("-"))
-        return set(segments)
-
-    def _jaccard_similarity(self, set1: set, set2: set) -> float:
-        intersection = len(set1 & set2)
-        union = len(set1 | set2)
-        return intersection / union if union > 0 else 0.0
-
     def _fallback_suggest(self, broken_url: str, candidate_urls: list) -> dict:
         if not candidate_urls:
             return {
@@ -43,18 +36,18 @@ class LLMClient:
                 "user_facing_explanation": "No LLM available. No candidates to suggest.",
             }
 
-        broken_segments = self._get_path_segments(broken_url)
+        broken_segments = get_path_segments(broken_url)
         best_url = None
         best_score = 0.0
 
         for url in candidate_urls:
-            candidate_segments = self._get_path_segments(url)
-            score = self._jaccard_similarity(broken_segments, candidate_segments)
+            candidate_segments = get_path_segments(url)
+            score = jaccard_similarity(broken_segments, candidate_segments)
             if score > best_score:
                 best_score = score
                 best_url = url
 
-        capped = min(best_score * 0.5, 0.5)
+        capped = min(best_score * _FALLBACK_CONFIDENCE_MULTIPLIER, _FALLBACK_CONFIDENCE_CAP)
         return {
             "suggested_url": best_url,
             "confidence": capped,
@@ -126,7 +119,8 @@ class LLMClient:
             data = response.json()
             content = data["choices"][0]["message"]["content"]
             return self._parse_json_response(content)
-        except Exception:
+        except Exception as e:
+            logger.warning("OpenRouter API call failed, using fallback: %s", e)
             return self._fallback_suggest(broken_url, candidate_urls)
 
     def draft_email(self, owner_name: str, failure_count: int, suggestions: list,
